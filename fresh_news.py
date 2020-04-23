@@ -7,20 +7,20 @@ import sys
 bot_token = '1299904634:AAHl6nBdR-Qkukpn365eLirT0j_JeE7cpHQ'
 tb = telebot.TeleBot(bot_token)
 
-feeds = [
-    'https://news.tut.by/rss/all.rss'
-]
+# feedss = [
+#     'https://news.tut.by/rss/all.rss'
+# ]
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 db_connection = sqlite3.connect(script_dir + '/fresh_news.sqlite', check_same_thread=False)
 db = db_connection.cursor()
 db.execute('CREATE TABLE IF NOT EXISTS fresh_news (title TEXT, date TEXT, link TEXT)')
-db.execute('CREATE TABLE IF NOT EXISTS users (chat_id TEXT)')
+db.execute('CREATE TABLE IF NOT EXISTS users (chat_id TEXT, news_category TEXT)')
 
 
 def get_all_users():
-    with db_connection:
-        db.execute('SELECT * FROM users')
+    with db.connection:
+        db.execute('SELECT chat_id FROM users')
         all_users = db.fetchall()
         lst_of_users = []
         for i in all_users:
@@ -28,9 +28,10 @@ def get_all_users():
     return lst_of_users
 
 
-def spin_users():
-    for i in get_all_users():
-        print(i)
+# def spin_users():
+#     for i in get_all_users():
+#         print(i)
+#     return i
 
 
 def article_is_not_db(article_date, article_link):
@@ -65,14 +66,28 @@ def read_article_feed(feed):
     sys.exit()
 
 
-def spin_feds():
-    for i in feeds:
+def get_all_feeds():
+    with db.connection:
+        for i in get_all_users():
+            db.execute('SELECT news_category FROM users WHERE chat_id=(?)', (i,))
+            all_feeds = db.fetchall()
+            print(all_feeds)
+            for j in all_feeds:
+                lst_of_feeds = j[0].split(' ')
+            print(lst_of_feeds)
+        return lst_of_feeds
+
+
+def spin_feeds():
+    for i in get_all_feeds():
         read_article_feed(i)
 
 
 if __name__ == '__main__':
-    spin_feds()
+    # get_all_feeds()
+    get_all_users()
     # spin_users()
+    spin_feeds()
     tb.polling()
     db_connection.close()
 
