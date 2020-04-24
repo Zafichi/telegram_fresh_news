@@ -36,12 +36,22 @@ def bot_send_text(bot_message, user_chat_id):
         db.connection.commit()
 
 
-def read_article_feed(feed, user_chat_id):
+def read_article_feed(feed):
     feed = feedparser.parse(feed)
     for article in feed['entries']:
+        url = (article['title_detail']['base'])
+        # print(url)
         if article_is_not_db(article['published'], article['link']):
             add_article_to_db(article['title'], article['published'], article['link'])
-            bot_send_text(article['title'] + ',' + article['link'], user_chat_id)
+            for i in get_all_users():
+                db.execute('SELECT news_category FROM users WHERE chat_id=(?)', (i,))
+                user_feeds = db.fetchall()
+                lst_of_user_feeds = []
+                for j in user_feeds:
+                    lst_of_user_feeds = j[0].split(' ')
+                # print(lst_of_user_feeds)
+                if url in lst_of_user_feeds:
+                    bot_send_text(article['title'] + ',' + article['link'], i)
 
 
 def get_all_users():
@@ -61,13 +71,20 @@ def get_all_feeds(user_chat_id):
         for j in all_feeds:
             lst_of_feeds = j[0].split(' ')
         for j in lst_of_feeds:
-            read_article_feed(j, user_chat_id)
+            read_article_feed(j)
     return lst_of_feeds
 
 
 def spin_feeds():
+    # lst_of_all_feeds = []
     for i in get_all_users():
         get_all_feeds(i)
+    #     for j in get_all_feeds(i):
+    #         if j not in lst_of_all_feeds and j != 'no_feeds':
+    #             lst_of_all_feeds.append(j)
+    # feeds = feedparser.parse(lst_of_all_feeds)
+    # for article in feeds['entries']:
+    #     add_article_to_db(article['title'], article['published'], article['link'])
     sys.exit()
 
 
