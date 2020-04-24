@@ -7,14 +7,11 @@ import sys
 bot_token = '1299904634:AAHl6nBdR-Qkukpn365eLirT0j_JeE7cpHQ'
 tb = telebot.TeleBot(bot_token)
 
-# feedss = [
-#     'https://news.tut.by/rss/all.rss'
-# ]
-
 script_dir = os.path.dirname(os.path.realpath(__file__))
 db_connection = sqlite3.connect(script_dir + '/fresh_news.sqlite', check_same_thread=False)
 db = db_connection.cursor()
-db.execute('CREATE TABLE IF NOT EXISTS fresh_news (title TEXT, date TEXT, link TEXT)')
+db.execute('CREATE TABLE IF NOT EXISTS fresh_news '
+           '(id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT ,title TEXT, date TEXT, link TEXT)')
 db.execute('CREATE TABLE IF NOT EXISTS users (chat_id TEXT, news_category TEXT)')
 
 
@@ -27,7 +24,7 @@ def article_is_not_db(article_date, article_link):
 
 
 def add_article_to_db(article_title, article_date, article_link):
-    db.execute('INSERT INTO fresh_news VALUES (?,?,?)', (article_title, article_date, article_link))
+    db.execute('INSERT INTO fresh_news(title, date, link) VALUES (?,?,?)', (article_title, article_date, article_link))
     db_connection.commit()
 
 
@@ -36,7 +33,7 @@ def bot_send_text(bot_message, user_chat_id):
         tb.send_message(user_chat_id, bot_message)
     except telebot.apihelper.ApiException:
         db.execute('DELETE FROM users WHERE chat_id = (?)', (user_chat_id,))
-        db_connection.commit()
+        db.connection.commit()
 
 
 def read_article_feed(feed, user_chat_id):
