@@ -10,6 +10,13 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 db_connection = sqlite3.connect(script_dir + '/fresh_news.sqlite', check_same_thread=False)
 db = db_connection.cursor()
 db.execute('CREATE TABLE IF NOT EXISTS users (chat_id TEXT, news_category TEXT)')
+str_of_urls = 'https://news.tut.by/rss/index.rss https://news.tut.by/rss/economics.rss ' \
+              'https://news.tut.by/rss/society.rss https://news.tut.by/rss/world.rss ' \
+              'https://news.tut.by/rss/culture.rss https://news.tut.by/rss/accidents.rss ' \
+              'https://news.tut.by/rss/finance.rss https://news.tut.by/rss/realty.rss ' \
+              'https://news.tut.by/rss/sport.rss https://news.tut.by/rss/health.rss https://news.tut.by/rss/auto.rss ' \
+              'https://news.tut.by/rss/lady.rss https://news.tut.by/rss/it.rss https://news.tut.by/rss/afisha.rss ' \
+              'https://news.tut.by/rss/popcorn.rss https://news.tut.by/rss/press.rss '
 
 
 def set_news(news_url, news_title, mess):
@@ -22,7 +29,7 @@ def set_news(news_url, news_title, mess):
                        (news_url, chat_id))
             db.connection.commit()
             tb.send_message(mess.chat.id, 'Вы успешно подписались на {}'.format(news_title))
-        elif news_cat[0][0] == 'https://news.tut.by/rss/all.rss':
+        elif news_cat[0][0] == str_of_urls:
             db.execute('UPDATE users SET news_category=(?) WHERE chat_id=(?)',
                        (news_url, chat_id))
             db.connection.commit()
@@ -104,10 +111,10 @@ while True:
                     news_cat = db.fetchall()
                     if news_cat[0][0] == 'no_feeds':
                         db.execute('UPDATE users SET news_category=(?) WHERE chat_id=(?)',
-                                   ('https://news.tut.by/rss/all.rss', chat_id))
+                                   (str_of_urls, chat_id))
                         db.connection.commit()
                         tb.send_message(message.chat.id, 'Вы успешно подписались на все категории новостей.')
-                    elif news_cat[0][0] == 'https://news.tut.by/rss/all.rss':
+                    elif news_cat[0][0] == str_of_urls:
                         tb.send_message(message.chat.id, 'Вы уже подписаны на эту категорию новостей.')
                     else:
                         tb.send_message(message.chat.id,
@@ -115,7 +122,7 @@ while True:
                                         подписаться на все категории или выберете другую категорию новостей''')
             elif message.text.lower() == '/да':
                 db.execute('UPDATE users SET news_category=(?) WHERE chat_id=(?)',
-                           ('https://news.tut.by/rss/all.rss', chat_id))
+                           (str_of_urls, chat_id))
                 db.connection.commit()
                 tb.send_message(message.chat.id, 'Вы успешно подписались на все категории новостей.')
 
