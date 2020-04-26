@@ -1,15 +1,20 @@
 import telebot
-import os
-import sqlite3
+import psycopg2
+import sys
+import requests
 from fresh_news import get_all_users, get_all_feeds
 
 bot_token = '1299904634:AAHl6nBdR-Qkukpn365eLirT0j_JeE7cpHQ'
 tb = telebot.TeleBot(bot_token)
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
-db_connection = sqlite3.connect(script_dir + '/fresh_news.sqlite', check_same_thread=False)
-db = db_connection.cursor()
-db.execute('CREATE TABLE IF NOT EXISTS users (chat_id TEXT, news_category TEXT)')
+connection = psycopg2.connect(
+  database="telegram_fresh_news",
+  user="telefresh",
+  password="Freshman2104",
+  host="127.0.0.1",
+  port="5432"
+)
+cur = connection.cursor()
 str_of_urls = 'https://news.tut.by/rss/index.rss https://news.tut.by/rss/economics.rss ' \
               'https://news.tut.by/rss/society.rss https://news.tut.by/rss/world.rss ' \
               'https://news.tut.by/rss/culture.rss https://news.tut.by/rss/accidents.rss ' \
@@ -20,26 +25,26 @@ str_of_urls = 'https://news.tut.by/rss/index.rss https://news.tut.by/rss/economi
 
 
 def set_news(news_url, news_title, mess):
-    with db.connection:
+    with connection:
         chat_id = mess.chat.id
-        db.execute('SELECT news_category FROM users WHERE chat_id=(?)', (chat_id,))
-        news_cat = db.fetchall()
+        cur.execute('SELECT news_category FROM users WHERE chat_id=(%s)', (chat_id,))
+        news_cat = cur.fetchall()
         if news_cat[0][0] == 'no_feeds':
-            db.execute('UPDATE users SET news_category=(?) WHERE chat_id=(?)',
-                       (news_url, chat_id))
-            db.connection.commit()
+            cur.execute('UPDATE users SET news_category=(%s) WHERE chat_id=(%s)',
+                        (news_url, chat_id))
+            connection.commit()
             tb.send_message(mess.chat.id, 'Вы успешно подписались на {}'.format(news_title))
         elif news_cat[0][0] == str_of_urls:
-            db.execute('UPDATE users SET news_category=(?) WHERE chat_id=(?)',
-                       (news_url, chat_id))
-            db.connection.commit()
+            cur.execute('UPDATE users SET news_category=(%s) WHERE chat_id=(%s)',
+                        (news_url, chat_id))
+            connection.commit()
             tb.send_message(mess.chat.id, 'Вы успешно подписались на {}'.format(news_title))
         elif news_url in get_all_feeds(mess.chat.id):
             tb.send_message(mess.chat.id, 'Вы уже подписаны на {}'.format(news_title))
         else:
-            db.execute('UPDATE users SET news_category=(news_category||" "||?) WHERE chat_id=(?)',
-                       (news_url, chat_id))
-            db.connection.commit()
+            cur.execute('UPDATE users SET news_category=format(news_category || %s) WHERE chat_id=(%s)',
+                        (news_url, chat_id))
+            connection.commit()
             tb.send_message(mess.chat.id, 'Вы успешно подписались на {}'.format(news_title))
 
 
@@ -52,13 +57,13 @@ while True:
 
         @tb.message_handler(content_types=['text'])
         def send_text(message):
-            chat_id = str(message.chat.id)
+            chat_id = message.chat.id
             if message.text.lower() == 'да':
                 if chat_id in get_all_users():
                     tb.send_message(message.chat.id, 'Вы уже подписаны на рассылку новостей.')
                 else:
-                    db.execute('INSERT INTO users VALUES (?, ?)', (chat_id, "no_feeds"))
-                    db.connection.commit()
+                    cur.execute("INSERT INTO users (chat_id, news_category) VALUES (%s, %s);", (chat_id, "no_feeds"))
+                    connection.commit()
                     tb.send_message(message.chat.id,
                                     '''Выберете категорию новостей на которую вы хотите подписаться.
                     Напишите: 
@@ -105,14 +110,13 @@ while True:
                 Чтобы сбросить все подписки напишите "/reset".''')
 
             elif message.text.lower() == '1':
-                with db.connection:
-                    chat_id = message.chat.id
-                    db.execute('SELECT news_category FROM users WHERE chat_id=(?)', (chat_id,))
-                    news_cat = db.fetchall()
+                with connection:
+                    cur.execute('SELECT news_category FROM users WHERE chat_id=(%s)', (chat_id,))
+                    news_cat = cur.fetchall()
                     if news_cat[0][0] == 'no_feeds':
-                        db.execute('UPDATE users SET news_category=(?) WHERE chat_id=(?)',
-                                   (str_of_urls, chat_id))
-                        db.connection.commit()
+                        cur.execute('UPDATE users SET news_category=(%s) WHERE chat_id=(%s)',
+                                    (str_of_urls, chat_id))
+                        connection.commit()
                         tb.send_message(message.chat.id, 'Вы успешно подписались на все категории новостей.')
                     elif news_cat[0][0] == str_of_urls:
                         tb.send_message(message.chat.id, 'Вы уже подписаны на эту категорию новостей.')
@@ -121,63 +125,63 @@ while True:
                                         '''Вы уже подписаны на другую категорию(-и) новостей.Напишите "/да" если вы хотете 
                                         подписаться на все категории или выберете другую категорию новостей''')
             elif message.text.lower() == '/да':
-                db.execute('UPDATE users SET news_category=(?) WHERE chat_id=(?)',
-                           (str_of_urls, chat_id))
-                db.connection.commit()
+                cur.execute('UPDATE users SET news_category=(%s) WHERE chat_id=(%s)',
+                            (str_of_urls, chat_id))
+                connection.commit()
                 tb.send_message(message.chat.id, 'Вы успешно подписались на все категории новостей.')
 
             elif message.text.lower() == '2':
-                set_news('https://news.tut.by/rss/index.rss', 'главные новости недели.', message)
+                set_news('https://news.tut.by/rss/index.rss ', 'главные новости недели.', message)
 
             elif message.text.lower() == '3':
-                set_news('https://news.tut.by/rss/economics.rss', 'деньги и власть.', message)
+                set_news('https://news.tut.by/rss/economics.rss ', 'деньги и власть.', message)
 
             elif message.text.lower() == '4':
-                set_news('https://news.tut.by/rss/society.rss', 'общество.', message)
+                set_news('https://news.tut.by/rss/society.rss ', 'общество.', message)
 
             elif message.text.lower() == '5':
-                set_news('https://news.tut.by/rss/world.rss', '"в мире".', message)
+                set_news('https://news.tut.by/rss/world.rss ', '"в мире".', message)
 
             elif message.text.lower() == '6':
-                set_news('https://news.tut.by/rss/culture.rss', 'кругозор.', message)
+                set_news('https://news.tut.by/rss/culture.rss ', 'кругозор.', message)
 
             elif message.text.lower() == '7':
-                set_news('https://news.tut.by/rss/accidents.rss', 'проишествия.', message)
+                set_news('https://news.tut.by/rss/accidents.rss ', 'проишествия.', message)
 
             elif message.text.lower() == '8':
-                set_news('https://news.tut.by/rss/finance.rss', 'финансы.', message)
+                set_news('https://news.tut.by/rss/finance.rss ', 'финансы.', message)
 
             elif message.text.lower() == '9':
-                set_news('https://news.tut.by/rss/realty.rss', 'недвижимость.', message)
+                set_news('https://news.tut.by/rss/realty.rss ', 'недвижимость.', message)
 
             elif message.text.lower() == '10':
-                set_news('https://news.tut.by/rss/sport.rss', 'спорт.', message)
+                set_news('https://news.tut.by/rss/sport.rss ', 'спорт.', message)
 
             elif message.text.lower() == '11':
-                set_news('https://news.tut.by/rss/health.rss', 'здоровье.', message)
+                set_news('https://news.tut.by/rss/health.rss ', 'здоровье.', message)
 
             elif message.text.lower() == '12':
-                set_news('https://news.tut.by/rss/auto.rss', 'авто.', message)
+                set_news('https://news.tut.by/rss/auto.rss ', 'авто.', message)
 
             elif message.text.lower() == '13':
-                set_news('https://news.tut.by/rss/lady.rss', 'леди.', message)
+                set_news('https://news.tut.by/rss/lady.rss ', 'леди.', message)
 
             elif message.text.lower() == '14':
-                set_news('https://news.tut.by/rss/it.rss', '42.', message)
+                set_news('https://news.tut.by/rss/it.rss ', '42.', message)
 
             elif message.text.lower() == '15':
-                set_news('https://news.tut.by/rss/afisha.rss', 'афишу.', message)
+                set_news('https://news.tut.by/rss/afisha.rss ', 'афишу.', message)
 
             elif message.text.lower() == '16':
-                set_news('https://news.tut.by/rss/popcorn.rss', 'попкорн.', message)
+                set_news('https://news.tut.by/rss/popcorn.rss ', 'попкорн.', message)
 
             elif message.text.lower() == '17':
-                set_news('https://news.tut.by/rss/press.rss', 'новости компаний.', message)
+                set_news('https://news.tut.by/rss/press.rss ', 'новости компаний.', message)
 
             elif message.text.lower() == '/reset':
-                db.execute('UPDATE users SET news_category=(?) WHERE chat_id=(?)',
-                           ('no_feeds', chat_id))
-                db.connection.commit()
+                cur.execute('UPDATE users SET news_category=(%s) WHERE chat_id=(%s)',
+                            ('no_feeds', chat_id))
+                cur.connection.commit()
                 tb.send_message(message.chat.id, 'Вы успешно отписались от всех подписок.')
 
             # elif message.text.lower() == '-1':
@@ -219,5 +223,15 @@ while True:
 
 
         tb.infinity_polling()
-    except telebot.apihelper.ApiException:
+    except requests.exceptions.ConnectionError:
+        print('ConnectionError')
         continue
+    except RecursionError:
+        print('RecursionError')
+        continue
+    except requests.exceptions.ReadTimeout:
+        print('ReadTimeout')
+        continue
+    else:
+        print('exit')
+        sys.exit()
