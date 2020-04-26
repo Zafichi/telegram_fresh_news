@@ -1,0 +1,1 @@
+bot:./work.sh
