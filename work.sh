@@ -1,5 +1,6 @@
 #!/bin/bash
 
+python3 bot.py
 count=0
 while (true)
 do

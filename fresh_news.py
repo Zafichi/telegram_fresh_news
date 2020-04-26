@@ -37,7 +37,6 @@ def bot_send_text(bot_message, user_chat_id):
         requests.get('https://api.telegram.org/bot{}/sendMessage'.format(bot_token), params=dict(
             chat_id=user_chat_id,
             text=bot_message))
-        # tb.send_message(user_chat_id, bot_message)
     except telebot.apihelper.ApiException:
         cur.execute('DELETE FROM users WHERE chat_id = (%s)', (user_chat_id,))
         connection.commit()
