@@ -6,9 +6,9 @@ import telebot
 bot_token = '1299904634:AAHl6nBdR-Qkukpn365eLirT0j_JeE7cpHQ'
 
 connection = psycopg2.connect(
-  database="telegram_fresh_news",
-  user="telefresh",
-  password="Freshman2104",
+  database="d6a17hvofd05vd",
+  user="cfvdvpggurdcyc",
+  password="798725c679f1e5e7a362e6e57e037a7632ace5b6eac8d09167588bad5ab58131",
   host="127.0.0.1",
   port="5432"
 )
