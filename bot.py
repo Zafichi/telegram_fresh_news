@@ -8,10 +8,10 @@ tb = telebot.TeleBot(bot_token)
 logger = telebot.logger
 
 connection = psycopg2.connect(
-  database="telegram_fresh_news",
-  user="telefresh",
-  password="Freshman2104",
-  host="127.0.0.1",
+  database="d6a17hvofd05vd",
+  user="cfvdvpggurdcyc",
+  password="798725c679f1e5e7a362e6e57e037a7632ace5b6eac8d09167588bad5ab58131",
+  host="localhost",
   port="5432"
 )
 cur = connection.cursor()
