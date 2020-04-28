@@ -1,1 +1,1 @@
-bot:./work.sh
+bot:python3 bot.py
