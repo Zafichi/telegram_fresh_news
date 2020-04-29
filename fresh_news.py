@@ -4,12 +4,12 @@ import requests
 import telebot
 import time
 
-bot_token = '1299904634:AAE9Ni1mQ2FPifpzulfcXETziWB4kEKhqjw'
+bot_token = ''
 
 connection = psycopg2.connect(
   database="d6a17hvofd05vd",
   user="cfvdvpggurdcyc",
-  password="798725c679f1e5e7a362e6e57e037a7632ace5b6eac8d09167588bad5ab58131",
+  password="",
   host="ec2-46-137-156-205.eu-west-1.compute.amazonaws.com",
   port="5432"
 )
