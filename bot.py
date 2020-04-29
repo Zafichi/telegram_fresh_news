@@ -2,7 +2,7 @@ import telebot
 import psycopg2
 from fresh_news import get_all_users, get_all_feeds
 
-bot_token = '1299904634:AAHl6nBdR-Qkukpn365eLirT0j_JeE7cpHQ'
+bot_token = '1299904634:AAE9Ni1mQ2FPifpzulfcXETziWB4kEKhqjw'
 tb = telebot.TeleBot(bot_token)
 
 logger = telebot.logger

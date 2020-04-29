@@ -2,8 +2,9 @@ import feedparser
 import psycopg2
 import requests
 import telebot
+import time
 
-bot_token = '1299904634:AAHl6nBdR-Qkukpn365eLirT0j_JeE7cpHQ'
+bot_token = '1299904634:AAE9Ni1mQ2FPifpzulfcXETziWB4kEKhqjw'
 
 connection = psycopg2.connect(
   database="d6a17hvofd05vd",
@@ -85,6 +86,6 @@ def spin_feeds():
 
 
 if __name__ == '__main__':
-    spin_feeds()
-    connection.close()
-
+    while True:
+        spin_feeds()
+        time.sleep(60)
