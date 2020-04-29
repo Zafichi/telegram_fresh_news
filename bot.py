@@ -1,6 +1,5 @@
 import telebot
 import psycopg2
-from fresh_news import get_all_users, get_all_feeds
 
 bot_token = '1299904634:AAE9Ni1mQ2FPifpzulfcXETziWB4kEKhqjw'
 tb = telebot.TeleBot(bot_token)
@@ -22,6 +21,24 @@ str_of_urls = 'https://news.tut.by/rss/index.rss https://news.tut.by/rss/economi
               'https://news.tut.by/rss/sport.rss https://news.tut.by/rss/health.rss https://news.tut.by/rss/auto.rss ' \
               'https://news.tut.by/rss/lady.rss https://news.tut.by/rss/it.rss https://news.tut.by/rss/afisha.rss ' \
               'https://news.tut.by/rss/popcorn.rss https://news.tut.by/rss/press.rss '
+
+
+def get_all_users():
+    with connection:
+        cur.execute('SELECT chat_id FROM users')
+        all_users = cur.fetchall()
+        for i in all_users:
+            lst_of_users = i[0].split(' ')
+    return lst_of_users
+
+
+def get_all_feeds(user_chat_id):
+    with connection:
+        cur.execute('SELECT news_category FROM users WHERE chat_id=(%s)', (user_chat_id,))
+        all_feeds = cur.fetchall()
+        for i in all_feeds:
+            lst_of_feeds = i[0].split(' ')
+    return lst_of_feeds
 
 
 def set_news(news_url, news_title, mess):

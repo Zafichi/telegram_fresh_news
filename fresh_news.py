@@ -63,9 +63,8 @@ def get_all_users():
     with connection:
         cur.execute('SELECT chat_id FROM users')
         all_users = cur.fetchall()
-        lst_of_users = []
         for i in all_users:
-            lst_of_users.append(i[0])
+            lst_of_users = i[0].split(' ')
     return lst_of_users
 
 
