@@ -1,1 +1,1 @@
-web: python3 fresh_news.py; python3 bot.py
+web: python fresh_news.py; python bot.py
