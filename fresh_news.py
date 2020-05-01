@@ -88,5 +88,4 @@ def spin_feeds():
 if __name__ == '__main__':
     while True:
         spin_feeds()
-        print(get_all_feeds('537131447'))
         time.sleep(60)
