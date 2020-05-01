@@ -4,7 +4,7 @@ import requests
 import telebot
 import time
 
-bot_token = ''
+bot_token = '1299904634:AAE9Ni1mQ2FPifpzulfcXETziWB4kEKhqjw'
 
 connection = psycopg2.connect(
   database="telegram_fresh_news",
@@ -88,4 +88,5 @@ def spin_feeds():
 if __name__ == '__main__':
     while True:
         spin_feeds()
+        print(get_all_feeds('537131447'))
         time.sleep(60)

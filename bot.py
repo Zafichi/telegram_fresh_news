@@ -1,8 +1,9 @@
 import telebot
 import psycopg2
+import time
 from fresh_news import get_all_users, get_all_feeds
 
-bot_token = ''
+bot_token = '1299904634:AAE9Ni1mQ2FPifpzulfcXETziWB4kEKhqjw'
 tb = telebot.TeleBot(bot_token)
 
 connection = psycopg2.connect(
@@ -29,19 +30,19 @@ def set_news(news_url, news_title, mess):
         news_cat = cur.fetchall()
         if news_cat[0][0] == 'no_feeds':
             cur.execute('UPDATE users SET news_category=(%s) WHERE chat_id=(%s)',
-                        (news_url, chat_id))
+                        (news_url + ' ', chat_id))
             connection.commit()
             tb.send_message(mess.chat.id, 'Вы успешно подписались на {}'.format(news_title))
         elif news_cat[0][0] == str_of_urls:
             cur.execute('UPDATE users SET news_category=(%s) WHERE chat_id=(%s)',
-                        (news_url, chat_id))
+                        (news_url + ' ', chat_id))
             connection.commit()
             tb.send_message(mess.chat.id, 'Вы успешно подписались на {}'.format(news_title))
         elif news_url in get_all_feeds(mess.chat.id):
             tb.send_message(mess.chat.id, 'Вы уже подписаны на {}'.format(news_title))
         else:
             cur.execute('UPDATE users SET news_category=format(news_category || %s) WHERE chat_id=(%s)',
-                        (news_url, chat_id))
+                        (news_url + ' ', chat_id))
             connection.commit()
             tb.send_message(mess.chat.id, 'Вы успешно подписались на {}'.format(news_title))
 
@@ -129,52 +130,52 @@ while True:
                 tb.send_message(message.chat.id, 'Вы успешно подписались на все категории новостей.')
 
             elif message.text.lower() == '2':
-                set_news('https://news.tut.by/rss/index.rss ', 'главные новости недели.', message)
+                set_news('https://news.tut.by/rss/index.rss', 'главные новости недели.', message)
 
             elif message.text.lower() == '3':
-                set_news('https://news.tut.by/rss/economics.rss ', 'деньги и власть.', message)
+                set_news('https://news.tut.by/rss/economics.rss', 'деньги и власть.', message)
 
             elif message.text.lower() == '4':
-                set_news('https://news.tut.by/rss/society.rss ', 'общество.', message)
+                set_news('https://news.tut.by/rss/society.rss', 'общество.', message)
 
             elif message.text.lower() == '5':
-                set_news('https://news.tut.by/rss/world.rss ', '"в мире".', message)
+                set_news('https://news.tut.by/rss/world.rss', '"в мире".', message)
 
             elif message.text.lower() == '6':
-                set_news('https://news.tut.by/rss/culture.rss ', 'кругозор.', message)
+                set_news('https://news.tut.by/rss/culture.rss', 'кругозор.', message)
 
             elif message.text.lower() == '7':
-                set_news('https://news.tut.by/rss/accidents.rss ', 'проишествия.', message)
+                set_news('https://news.tut.by/rss/accidents.rss', 'проишествия.', message)
 
             elif message.text.lower() == '8':
-                set_news('https://news.tut.by/rss/finance.rss ', 'финансы.', message)
+                set_news('https://news.tut.by/rss/finance.rss', 'финансы.', message)
 
             elif message.text.lower() == '9':
-                set_news('https://news.tut.by/rss/realty.rss ', 'недвижимость.', message)
+                set_news('https://news.tut.by/rss/realty.rss', 'недвижимость.', message)
 
             elif message.text.lower() == '10':
-                set_news('https://news.tut.by/rss/sport.rss ', 'спорт.', message)
+                set_news('https://news.tut.by/rss/sport.rss', 'спорт.', message)
 
             elif message.text.lower() == '11':
-                set_news('https://news.tut.by/rss/health.rss ', 'здоровье.', message)
+                set_news('https://news.tut.by/rss/health.rss', 'здоровье.', message)
 
             elif message.text.lower() == '12':
-                set_news('https://news.tut.by/rss/auto.rss ', 'авто.', message)
+                set_news('https://news.tut.by/rss/auto.rss', 'авто.', message)
 
             elif message.text.lower() == '13':
-                set_news('https://news.tut.by/rss/lady.rss ', 'леди.', message)
+                set_news('https://news.tut.by/rss/lady.rss', 'леди.', message)
 
             elif message.text.lower() == '14':
-                set_news('https://news.tut.by/rss/it.rss ', '42.', message)
+                set_news('https://news.tut.by/rss/it.rss', '42.', message)
 
             elif message.text.lower() == '15':
-                set_news('https://news.tut.by/rss/afisha.rss ', 'афишу.', message)
+                set_news('https://news.tut.by/rss/afisha.rss', 'афишу.', message)
 
             elif message.text.lower() == '16':
-                set_news('https://news.tut.by/rss/popcorn.rss ', 'попкорн.', message)
+                set_news('https://news.tut.by/rss/popcorn.rss', 'попкорн.', message)
 
             elif message.text.lower() == '17':
-                set_news('https://news.tut.by/rss/press.rss ', 'новости компаний.', message)
+                set_news('https://news.tut.by/rss/press.rss', 'новости компаний.', message)
 
             elif message.text.lower() == '/reset':
                 cur.execute('UPDATE users SET news_category=(%s) WHERE chat_id=(%s)',
@@ -185,7 +186,7 @@ while True:
             else:
                 tb.send_message(message.chat.id, 'Напишите "/help"')
 
-
         tb.infinity_polling(True)
+
     except telebot.apihelper.ApiException:
-        continue
+        time.sleep(2)
