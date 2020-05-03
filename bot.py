@@ -1,6 +1,6 @@
 import telebot
 import psycopg2
-import time
+import sys
 from fresh_news import get_all_users, get_all_feeds
 
 bot_token = '1299904634:AAE9Ni1mQ2FPifpzulfcXETziWB4kEKhqjw'
@@ -189,6 +189,6 @@ while True:
         tb.infinity_polling(True)
 
     except telebot.apihelper.ApiException:
-        time.sleep(2)
+        sys.exit()
     else:
-        time.sleep(2)
+        sys.exit()
